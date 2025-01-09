@@ -1,23 +1,23 @@
 {
-  "name": "@zondax/ledger-template",
+  "name": "@zondax/ledger-mina-js",
   "author": "Zondax AG",
   "license": "Apache-2.0",
-  "version": "0.0.0",
-  "description": "Node API for the Template App (Ledger Nano S, S+, X, Stax and Flex)",
+  "version": "0.0.1",
+  "description": "Node API for the Mina App (Ledger Nano S, S+, X, Stax and Flex)",
   "keywords": [
     "Zondax",
     "Ledger",
     "Typescript",
     "Javascript",
-    "Template"
+    "Mina"
   ],
-  "homepage": "https://github.com/zondax/ledger-template",
+  "homepage": "https://github.com/zondax/ledger-mina-js-priv",
   "bugs": {
-    "url": "https://github.com/zondax/ledger-template/issues"
+    "url": "https://github.com/zondax/ledger-mina-js-priv/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zondax/ledger-template.git"
+    "url": "git+https://github.com/zondax/ledger-mina-js-priv.git"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,24 +35,24 @@
     "upgrade": "bunx npm-check-updates -i"
   },
   "dependencies": {
-    "@zondax/ledger-js": "^0.11.0"
+    "@zondax/ledger-js": "^1.0.1"
   },
   "devDependencies": {
-    "@ledgerhq/hw-transport-mocker": "^6.28.6",
+    "@ledgerhq/hw-transport-mocker": "^6.29.3",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/jest": "29.5.12",
-    "@types/node": "^20.12.13",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "eslint": "^9.3.0",
+    "@types/jest": "29.5.13",
+    "@types/node": "^22.6.1",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-tsdoc": "^0.3.0",
-    "eslint-plugin-unused-imports": "^4.0.0",
-    "prettier": "^3.2.5",
-    "ts-jest": "^29.1.4",
-    "typescript": "^5.4.5",
-    "sort-package-json": "^2.10.0"
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "prettier": "^3.3.3",
+    "sort-package-json": "^2.10.1",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2"
   },
   "publishConfig": {
     "access": "public"

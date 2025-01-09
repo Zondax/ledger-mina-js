@@ -15,34 +15,71 @@
  ******************************************************************************* */
 import type Transport from '@ledgerhq/hw-transport'
 import BaseApp, {BIP32Path, INSGeneric, processErrorResponse, processResponse} from '@zondax/ledger-js'
-import {ByteStream} from '@zondax/ledger-js/dist/byteStream'
 
 import {P1_VALUES, PUBKEYLEN} from './consts'
 import {ResponseSign, ResponseAddress} from './types'
 
-export class TemplateApp extends BaseApp {
+interface SignTransactionArgs {
+    txType: number;
+    senderAccount: number;
+    senderAddress: string;
+    receiverAddress: string;
+    amount: number;
+    fee: number;
+    nonce: number;
+    validUntil?: number;
+    memo?: string;
+    networkId: number;
+}
+interface BaseLedgerResponse {
+    returnCode: string;
+    statusText?: string;
+    message?: string;
+}
+
+interface GetAppVersionResponse extends BaseLedgerResponse {
+    version?: string | null;
+}
+
+interface GetAddressResponse extends BaseLedgerResponse {
+    publicKey?: string | null;
+}
+
+interface GetAppNameResponse extends BaseLedgerResponse {
+    name?: string;
+    version?: string | null;
+}
+
+interface SignTransactionResponse extends BaseLedgerResponse {
+    signature?: string | null;
+}
+
+
+export class MinaApp extends BaseApp {
     static _INS = {
-        GET_VERSION: 0x00 as number,
-        GET_ADDR: 0x01 as number,
-        SIGN: 0x02 as number,
-        // TODO: Add more INS here
+        GET_VERSION: 0x01 as number,
+        GET_ADDR: 0x02 as number,
+        SIGN_TX: 0x03 as number,
+        TEST_CRYPTO: 0x04 as number,
+        SIGN_MSG: 0x05 as number,
     }
 
     static _params = {
-        cla: 0x80,
-        ins: {...TemplateApp._INS} as INSGeneric,
+        cla: 0xe0,
+        ins: {...MinaApp._INS} as INSGeneric,
         p1Values: {ONLY_RETRIEVE: 0x00 as 0, SHOW_ADDRESS_IN_DEVICE: 0x01 as 1},
         chunkSize: 250,
         requiredPathLengths: [5],
     }
 
     constructor(transport: Transport) {
-        super(transport, TemplateApp._params)
+        super(transport, MinaApp._params)
         if (!this.transport) {
             throw new Error('Transport has not been defined')
         }
     }
 
+    // TODO:
     async getAddressAndPubKey(path: string, showAddrInDevice = false): Promise<ResponseAddress> {
         const bip44PathBuffer = this.serializePath(path)
         const p1 = showAddrInDevice ? P1_VALUES.SHOW_ADDRESS_IN_DEVICE : P1_VALUES.ONLY_RETRIEVE
@@ -61,9 +98,10 @@ export class TemplateApp extends BaseApp {
         }
     }
 
+    // TODO:
     async sign(path: BIP32Path, blob: Buffer): Promise<ResponseSign> {
         const chunks = this.prepareChunks(path, blob);
-        // TODO: if P2 is needed, use `sendGenericChunk`
+
         try {
             let signatureResponse = await this.sendGenericChunk(this.INS.SIGN, 0, 1, chunks.length, chunks[0])
 
@@ -78,5 +116,194 @@ export class TemplateApp extends BaseApp {
         } catch (e) {
             throw processErrorResponse(e)
         }
+    }
+
+    async getAppName(): Promise<GetAppNameResponse> {
+        try {
+            const ledger_CLA = 0xB0;
+            const responseBuffer = await this.transport.send(ledger_CLA, this.INS.GET_VERSION, 0, 0);
+            const response = processResponse(responseBuffer);
+
+            // Sample processed response :
+            // --    | Name        | -- | Version        | --
+            // 01 04 | 4d 69 6e 61 | 05 | 31 2e 33 2e 31 | 01 00
+
+            const separator: number = response.readBytesAt(1, 6).readUInt8();
+            const name = response.readBytesAt(separator - 1, 2);
+            const version = response.readBytesAt(response.length() - separator - 2, separator + 2);
+
+            return {
+                name: name.toString(),
+                version: version.toString(),
+                returnCode: "9000"
+            };
+        } catch (error) {
+            const respError = processErrorResponse(error)
+            return {
+                name: undefined,
+                version: undefined,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+    }
+
+    async getAppVersion(): Promise<GetAppVersionResponse> {
+        try {
+            const responseBuffer = await this.transport.send(this.CLA, this.INS.GET_VERSION, 0, 0);
+            const response = processResponse(responseBuffer);
+
+            if (response.length() !== 3) {
+                throw new Error('Response length is not valid');
+            }
+
+            const version = "" + response.readBytes(1).readUInt8() + "." + response.readBytes(1).readUInt8() + "." + response.readBytes(1).readUInt8();
+
+            return {
+                version,
+                returnCode: "9000"
+            };
+        } catch (error) {
+            const respError = processErrorResponse(error)
+            return {
+                version: null,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+    }
+
+    async getAddress(account?: number): Promise<GetAddressResponse> {
+        if (!Number.isInteger(account)) {
+            return {
+                publicKey: null,
+                returnCode: "-5",
+                message: "Account number must be an Integer",
+            };
+        }
+        if (account === undefined) {
+            return {
+                publicKey: null,
+                returnCode: "-1",
+                message: "Account number is required",
+            };
+        }
+
+        const accountBuf = Buffer.from(account.toString(16).padStart(8, '0'), 'hex');
+
+        try {
+            const responseBuffer = await this.transport.send(this.CLA, this.INS.GET_ADDR, 0, 0, accountBuf)
+            const response = processResponse(responseBuffer)
+
+            return {
+                publicKey: response.readBytes(PUBKEYLEN).toString(),
+                returnCode: "9000"
+            };
+        } catch (error) {
+            const respError = processErrorResponse(error)
+            return {
+                publicKey: null,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+    }
+
+    async signTransaction({ txType, senderAccount, senderAddress, receiverAddress, amount, fee, nonce, validUntil, memo, networkId, }: SignTransactionArgs): Promise<SignTransactionResponse> {
+        if (isNaN(txType) || isNaN(senderAccount) || !senderAddress || !receiverAddress || !amount && txType === 0 /* PAYMENT */ || !fee || !Number.isInteger(amount) || !Number.isInteger(fee) || isNaN(nonce) || isNaN(networkId)) {
+            console.log("Missing or wrong arguments")
+            return {
+                signature: null,
+                returnCode: "-1",
+                message: "Missing or wrong arguments",
+            };
+        }
+        if (memo && memo.length > 32) {
+            console.log("Memo field too long")
+            return {
+                signature: null,
+                returnCode: "-3",
+                message: "Memo field too long",
+            };
+        }
+        if (fee < 1e6) {
+            console.log("Fee too small")
+            return {
+                signature: null,
+                returnCode: "-4",
+                message: "Fee too small",
+            };
+        }
+
+        const apdu = this.createTXApdu(
+            txType,
+            senderAccount,
+            senderAddress,
+            receiverAddress,
+            amount,
+            fee,
+            nonce,
+            validUntil,
+            memo,
+            networkId
+        );
+
+        const apduBuffer = Buffer.from(apdu, "hex");
+        const statusList = [0x9000, 0x6986];
+        
+        console.log("apduBuffer", apduBuffer)
+
+        if (apduBuffer.length > 256) {
+            console.log("data length > 256 bytes")
+            return {
+                signature: null,
+                returnCode: "-2",
+                message: "data length > 256 bytes",
+                statusText: "DATA_TOO_BIG"
+            };
+        }
+
+        try {
+            const responseBuffer = await this.transport.send(
+                this.CLA,
+                this.INS.SIGN_TX,
+                0,
+                0,
+                apduBuffer,
+                statusList
+            );
+
+            const response = processResponse(responseBuffer)
+            console.log("response", response)
+            const signature = response.readBytes(response.length()).toString("hex");
+
+            return {
+                signature,
+                returnCode: "9000"
+            };
+        } catch (e) {
+            const respError = processErrorResponse(e)
+            return {
+                signature: null,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+    }
+
+
+    createTXApdu(txType: number, senderAccount: number, senderAddress: string, receiverAddress: string, amount: number, fee: number, nonce: number, validUntil = 4294967295, memo = "", networkId: number) {
+        const senderBip44AccountHex = Buffer.from(senderAccount.toString(16).padStart(8, '0'), 'hex').toString('hex');
+        const senderAddressHex = Buffer.from(senderAddress, "ascii").toString("hex");
+        const receiverHex = Buffer.from(receiverAddress, "ascii").toString("hex");
+        const amountHex = Buffer.from(amount.toString(16).padStart(16, '0'), 'hex').toString('hex');
+        const feeHex = Buffer.from(fee.toString(16).padStart(16, '0'), 'hex').toString('hex');
+        const nonceHex = Buffer.from(Number(nonce).toString(16).toUpperCase().padStart(8, '0'), 'hex').toString('hex');
+        const validUntilHex = Buffer.from(validUntil.toString(16).padStart(8, '0'), 'hex').toString('hex');
+        const memoHex = Buffer.from(memo.padEnd(32, '\0'), 'utf8').toString('hex');
+        const tagHex = Buffer.from(txType.toString(16).padStart(2, '0'), 'hex').toString('hex');
+        const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex').toString('hex');
+        const apduMessage = senderBip44AccountHex + senderAddressHex + receiverHex + amountHex + feeHex + nonceHex + validUntilHex + memoHex + tagHex + networkIdHex;
+        return apduMessage;
     }
 }
