@@ -54,6 +54,10 @@ interface SignTransactionResponse extends BaseLedgerResponse {
     signature?: string | null;
 }
 
+interface SignMessageResponse extends BaseLedgerResponse {
+    signature?: string | null;
+}
+
 
 export class MinaApp extends BaseApp {
     static _INS = {
@@ -76,45 +80,6 @@ export class MinaApp extends BaseApp {
         super(transport, MinaApp._params)
         if (!this.transport) {
             throw new Error('Transport has not been defined')
-        }
-    }
-
-    // TODO:
-    async getAddressAndPubKey(path: string, showAddrInDevice = false): Promise<ResponseAddress> {
-        const bip44PathBuffer = this.serializePath(path)
-        const p1 = showAddrInDevice ? P1_VALUES.SHOW_ADDRESS_IN_DEVICE : P1_VALUES.ONLY_RETRIEVE
-
-        try {
-            const responseBuffer = await this.transport.send(this.CLA, this.INS.GET_ADDR, p1, 0, bip44PathBuffer)
-
-            const response = processResponse(responseBuffer)
-
-            return {
-                pubkey: response.readBytes(PUBKEYLEN),
-                address: response.getAvailableBuffer().toString(),
-            } as ResponseAddress
-        } catch (e) {
-            throw processErrorResponse(e)
-        }
-    }
-
-    // TODO:
-    async sign(path: BIP32Path, blob: Buffer): Promise<ResponseSign> {
-        const chunks = this.prepareChunks(path, blob);
-
-        try {
-            let signatureResponse = await this.sendGenericChunk(this.INS.SIGN, 0, 1, chunks.length, chunks[0])
-
-            for (let i = 1; i < chunks.length; i += 1) {
-                signatureResponse = await this.sendGenericChunk(this.INS.SIGN, 0, 1 + i, chunks.length, chunks[i])
-            }
-
-            return {
-                signature: signatureResponse.readBytes(signatureResponse.length()),
-            }
-
-        } catch (e) {
-            throw processErrorResponse(e)
         }
     }
 
@@ -211,7 +176,6 @@ export class MinaApp extends BaseApp {
 
     async signTransaction({ txType, senderAccount, senderAddress, receiverAddress, amount, fee, nonce, validUntil, memo, networkId, }: SignTransactionArgs): Promise<SignTransactionResponse> {
         if (isNaN(txType) || isNaN(senderAccount) || !senderAddress || !receiverAddress || !amount && txType === 0 /* PAYMENT */ || !fee || !Number.isInteger(amount) || !Number.isInteger(fee) || isNaN(nonce) || isNaN(networkId)) {
-            console.log("Missing or wrong arguments")
             return {
                 signature: null,
                 returnCode: "-1",
@@ -219,7 +183,6 @@ export class MinaApp extends BaseApp {
             };
         }
         if (memo && memo.length > 32) {
-            console.log("Memo field too long")
             return {
                 signature: null,
                 returnCode: "-3",
@@ -227,7 +190,6 @@ export class MinaApp extends BaseApp {
             };
         }
         if (fee < 1e6) {
-            console.log("Fee too small")
             return {
                 signature: null,
                 returnCode: "-4",
@@ -251,10 +213,7 @@ export class MinaApp extends BaseApp {
         const apduBuffer = Buffer.from(apdu, "hex");
         const statusList = [0x9000, 0x6986];
         
-        console.log("apduBuffer", apduBuffer)
-
         if (apduBuffer.length > 256) {
-            console.log("data length > 256 bytes")
             return {
                 signature: null,
                 returnCode: "-2",
@@ -274,7 +233,6 @@ export class MinaApp extends BaseApp {
             );
 
             const response = processResponse(responseBuffer)
-            console.log("response", response)
             const signature = response.readBytes(response.length()).toString("hex");
 
             return {
@@ -289,6 +247,52 @@ export class MinaApp extends BaseApp {
                 message: respError.errorMessage,
             };
         }
+    }
+
+    async signMessage(account: number, networkId: number, message: string): Promise<SignMessageResponse> {
+        if (message.length === 0) {
+            return {
+                signature: null,
+                returnCode: "-6",
+                message: "Message is empty",
+            };
+        }
+        if (message.length > 255) {
+            return {
+                signature: null,
+                returnCode: "-7",
+                message: "Message too long",
+            };
+        }
+        try {
+            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex').toString('hex');
+            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex').toString('hex');
+            const messageHex = Buffer.from(message, 'utf8').toString('hex');
+            const dataTx = accountHex + networkIdHex + messageHex;
+            const responseBuffer = await this.transport.send(
+                this.CLA,
+                this.INS.SIGN_MSG,
+                0,
+                0,
+                Buffer.from(dataTx, 'hex')
+            );
+
+            const response = processResponse(responseBuffer)
+            const signature = response.readBytes(response.length()).toString("hex");
+
+            return {
+                signature,
+                returnCode: "9000"
+            };
+        } catch (e) {
+            const respError = processErrorResponse(e)
+            return {
+                signature: null,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+
     }
 
 
