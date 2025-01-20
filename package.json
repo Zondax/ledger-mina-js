@@ -11,13 +11,13 @@
     "Javascript",
     "Mina"
   ],
-  "homepage": "https://github.com/zondax/ledger-mina-js-priv",
+  "homepage": "https://github.com/zondax/ledger-mina-js",
   "bugs": {
-    "url": "https://github.com/zondax/ledger-mina-js-priv/issues"
+    "url": "https://github.com/zondax/ledger-mina-js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zondax/ledger-mina-js-priv.git"
+    "url": "git+https://github.com/zondax/ledger-mina-js.git"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
