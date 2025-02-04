@@ -138,7 +138,7 @@ export class MinaApp extends BaseApp {
         }
     }
 
-    async getAddress(account?: number): Promise<GetAddressResponse> {
+    async getAddress(account?: number, showAddrInDevice = true): Promise<GetAddressResponse> {
         if (!Number.isInteger(account)) {
             return {
                 publicKey: null,
@@ -156,8 +156,12 @@ export class MinaApp extends BaseApp {
 
         const accountBuf = Buffer.from(account.toString(16).padStart(8, '0'), 'hex');
 
+        const p1 = showAddrInDevice
+        ? P1_VALUES.SHOW_ADDRESS_IN_DEVICE
+        : P1_VALUES.ONLY_RETRIEVE;
+
         try {
-            const responseBuffer = await this.transport.send(this.CLA, this.INS.GET_ADDR, 0, 0, accountBuf)
+            const responseBuffer = await this.transport.send(this.CLA, this.INS.GET_ADDR, p1, 0, accountBuf)
             const response = processResponse(responseBuffer)
 
             return {
