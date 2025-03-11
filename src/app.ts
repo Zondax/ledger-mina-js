@@ -55,7 +55,9 @@ interface SignTransactionResponse extends BaseLedgerResponse {
 }
 
 interface SignMessageResponse extends BaseLedgerResponse {
-    signature?: string | null;
+    field: string | null;
+    scalar: string | null;
+    raw_signature?: string | null;
 }
 
 
@@ -85,21 +87,11 @@ export class MinaApp extends BaseApp {
 
     async getAppName(): Promise<GetAppNameResponse> {
         try {
-            const ledger_CLA = 0xB0;
-            const responseBuffer = await this.transport.send(ledger_CLA, this.INS.GET_VERSION, 0, 0);
-            const response = processResponse(responseBuffer);
-
-            // Sample processed response :
-            // --    | Name        | -- | Version        | --
-            // 01 04 | 4d 69 6e 61 | 05 | 31 2e 33 2e 31 | 01 00
-
-            const separator: number = response.readBytesAt(1, 6).readUInt8();
-            const name = response.readBytesAt(separator - 1, 2);
-            const version = response.readBytesAt(response.length() - separator - 2, separator + 2);
+            const version = await this.getAppVersion();
 
             return {
-                name: name.toString(),
-                version: version.toString(),
+                name: "Mina",
+                version: version.version,
                 returnCode: "9000"
             };
         } catch (error) {
@@ -256,47 +248,61 @@ export class MinaApp extends BaseApp {
     async signMessage(account: number, networkId: number, message: string): Promise<SignMessageResponse> {
         if (message.length === 0) {
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: "-6",
                 message: "Message is empty",
             };
         }
         if (message.length > 255) {
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: "-7",
                 message: "Message too long",
             };
         }
         try {
-            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex').toString('hex');
-            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex').toString('hex');
-            const messageHex = Buffer.from(message, 'utf8').toString('hex');
-            const dataTx = accountHex + networkIdHex + messageHex;
+            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex');
+            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex');
+            const messageHex = Buffer.from(message, 'utf8');
+            // Calculate total buffer length
+            const totalLength = accountHex.length + networkIdHex.length + messageHex.length;
+            // Create buffer with total length
+            const dataTx = Buffer.concat([accountHex, networkIdHex, messageHex], totalLength);
+
             const responseBuffer = await this.transport.send(
                 this.CLA,
                 this.INS.SIGN_MSG,
                 0,
                 0,
-                Buffer.from(dataTx, 'hex')
+                dataTx
             );
 
             const response = processResponse(responseBuffer)
             const signature = response.readBytes(response.length()).toString("hex");
+            const sigLength = signature.length;
+            const field_extracted = signature.substring(0, sigLength / 2);
+            const scalar_extracted = signature.substring(sigLength / 2, sigLength);
 
             return {
-                signature,
+                field: BigInt("0x" + field_extracted).toString(),
+                scalar: BigInt("0x" + scalar_extracted).toString(),
+                raw_signature: signature,
                 returnCode: "9000"
             };
         } catch (e) {
             const respError = processErrorResponse(e)
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: respError.returnCode.toString(),
                 message: respError.errorMessage,
             };
         }
-
     }
 
 
