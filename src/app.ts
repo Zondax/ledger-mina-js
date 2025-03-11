@@ -259,16 +259,20 @@ export class MinaApp extends BaseApp {
             };
         }
         try {
-            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex').toString('hex');
-            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex').toString('hex');
-            const messageHex = Buffer.from(message, 'utf8').toString('hex');
-            const dataTx = accountHex + networkIdHex + messageHex;
+            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex');
+            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex');
+            const messageHex = Buffer.from(message, 'utf8');
+            // Calculate total buffer length
+            const totalLength = accountHex.length + networkIdHex.length + messageHex.length;
+            // Create buffer with total length
+            const dataTx = Buffer.concat([accountHex, networkIdHex, messageHex], totalLength);
+
             const responseBuffer = await this.transport.send(
                 this.CLA,
                 this.INS.SIGN_MSG,
                 0,
                 0,
-                Buffer.from(dataTx, 'hex')
+                dataTx
             );
 
             const response = processResponse(responseBuffer)
@@ -286,7 +290,6 @@ export class MinaApp extends BaseApp {
                 message: respError.errorMessage,
             };
         }
-
     }
 
 
