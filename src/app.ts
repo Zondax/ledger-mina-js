@@ -55,7 +55,9 @@ interface SignTransactionResponse extends BaseLedgerResponse {
 }
 
 interface SignMessageResponse extends BaseLedgerResponse {
-    signature?: string | null;
+    field: string | null;
+    scalar: string | null;
+    raw_signature?: string | null;
 }
 
 
@@ -246,14 +248,18 @@ export class MinaApp extends BaseApp {
     async signMessage(account: number, networkId: number, message: string): Promise<SignMessageResponse> {
         if (message.length === 0) {
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: "-6",
                 message: "Message is empty",
             };
         }
         if (message.length > 255) {
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: "-7",
                 message: "Message too long",
             };
@@ -277,15 +283,22 @@ export class MinaApp extends BaseApp {
 
             const response = processResponse(responseBuffer)
             const signature = response.readBytes(response.length()).toString("hex");
+            const sigLength = signature.length;
+            const field_extracted = signature.substring(0, sigLength / 2);
+            const scalar_extracted = signature.substring(sigLength / 2, sigLength);
 
             return {
-                signature,
+                field: BigInt("0x" + field_extracted).toString(),
+                scalar: BigInt("0x" + scalar_extracted).toString(),
+                raw_signature: signature,
                 returnCode: "9000"
             };
         } catch (e) {
             const respError = processErrorResponse(e)
             return {
-                signature: null,
+                field: null,
+                scalar: null,
+                raw_signature: null,
                 returnCode: respError.returnCode.toString(),
                 message: respError.errorMessage,
             };
