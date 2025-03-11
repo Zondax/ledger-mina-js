@@ -85,21 +85,11 @@ export class MinaApp extends BaseApp {
 
     async getAppName(): Promise<GetAppNameResponse> {
         try {
-            const ledger_CLA = 0xB0;
-            const responseBuffer = await this.transport.send(ledger_CLA, this.INS.GET_VERSION, 0, 0);
-            const response = processResponse(responseBuffer);
-
-            // Sample processed response :
-            // --    | Name        | -- | Version        | --
-            // 01 04 | 4d 69 6e 61 | 05 | 31 2e 33 2e 31 | 01 00
-
-            const separator: number = response.readBytesAt(1, 6).readUInt8();
-            const name = response.readBytesAt(separator - 1, 2);
-            const version = response.readBytesAt(response.length() - separator - 2, separator + 2);
+            const version = await this.getAppVersion();
 
             return {
-                name: name.toString(),
-                version: version.toString(),
+                name: "Mina",
+                version: version.version,
                 returnCode: "9000"
             };
         } catch (error) {
