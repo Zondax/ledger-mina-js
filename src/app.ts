@@ -68,6 +68,7 @@ export class MinaApp extends BaseApp {
         SIGN_TX: 0x03 as number,
         TEST_CRYPTO: 0x04 as number,
         SIGN_MSG: 0x05 as number,
+        SIGN_FIELD_ELEMENT: 0x06 as number,
     }
 
     static _params = {
@@ -305,6 +306,72 @@ export class MinaApp extends BaseApp {
         }
     }
 
+    async signFieldElement(account: number, networkId: number, field: string | bigint): Promise<SignMessageResponse> {
+        // Convert string to BigInt if needed
+        const fieldBigInt = typeof field === 'string' ? BigInt(field) : field;
+
+        if (!fieldBigInt) {
+            return {
+                field: null,
+                scalar: null,
+                raw_signature: null,
+                returnCode: "-1",
+                message: "Field is empty",
+            };
+        }
+
+        try {
+            // Convert account and networkId to buffers (same as in signMessage)
+            const accountHex = Buffer.from(account.toString(16).padStart(8, '0'), 'hex');
+            const networkIdHex = Buffer.from(networkId.toString(16).padStart(2, '0'), 'hex');
+
+            // Convert BigInt to hex string, remove '0x' prefix if present, and pad to even length
+            let fieldHex = fieldBigInt.toString(16).replace('0x', '');
+            if (fieldHex.length % 2 !== 0) {
+                fieldHex = '0' + fieldHex;
+            }
+
+            // Convert hex string to Buffer
+            const fieldBuffer = Buffer.from(fieldHex, 'hex');
+
+            // Calculate total buffer length
+            const totalLength = accountHex.length + networkIdHex.length + fieldBuffer.length;
+            
+            // Create buffer with total length
+            const dataTx = Buffer.concat([accountHex, networkIdHex, fieldBuffer], totalLength);
+
+            const responseBuffer = await this.transport.send(
+                this.CLA,
+                this.INS.SIGN_FIELD_ELEMENT,
+                0,
+                0,
+                dataTx
+            );
+
+            const response = processResponse(responseBuffer)
+            const signature = response.readBytes(response.length()).toString("hex");
+            const sigLength = signature.length;
+            const field_extracted = signature.substring(0, sigLength / 2);
+            const scalar_extracted = signature.substring(sigLength / 2, sigLength);
+
+            return {
+                field: BigInt("0x" + field_extracted).toString(),
+                scalar: BigInt("0x" + scalar_extracted).toString(),
+                raw_signature: signature,
+                returnCode: "9000"
+            };
+
+        } catch (e) {
+            const respError = processErrorResponse(e)
+            return {
+                field: null,
+                scalar: null,
+                raw_signature: null,
+                returnCode: respError.returnCode.toString(),
+                message: respError.errorMessage,
+            };
+        }
+    }
 
     createTXApdu(txType: number, senderAccount: number, senderAddress: string, receiverAddress: string, amount: number, fee: number, nonce: number, validUntil = 4294967295, memo = "", networkId: number) {
         const senderBip44AccountHex = Buffer.from(senderAccount.toString(16).padStart(8, '0'), 'hex').toString('hex');
