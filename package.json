@@ -1,9 +1,6 @@
 {
   "name": "@zondax/ledger-mina-js",
-  "author": "Zondax AG",
-  "license": "Apache-2.0",
   "version": "0.0.1",
-  "type": "module",
   "description": "Node API for the Mina App (Ledger Nano S, S+, X, Stax and Flex)",
   "keywords": [
     "Zondax",
@@ -20,6 +17,9 @@
     "type": "git",
     "url": "git+https://github.com/zondax/ledger-mina-js.git"
   },
+  "license": "Apache-2.0",
+  "author": "Zondax AG",
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "browser": "./dist/index.browser.js",
@@ -30,15 +30,15 @@
   ],
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs && tsc --emitDeclarationOnly",
-    "build:types": "tsc --emitDeclarationOnly",
     "build:js": "rollup -c --bundleConfigAsCjs",
+    "build:types": "tsc --emitDeclarationOnly",
     "format": "FORCE_COLOR=1 prettier --write . && sort-package-json",
     "format:check": "FORCE_COLOR=1 prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs",
-    "test:node": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs tests/integration/node",
     "test:extension": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs tests/integration/extension",
+    "test:node": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs tests/integration/node",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --watch",
     "upgrade": "bunx npm-check-updates -i"
   },

@@ -1,8 +1,8 @@
 export interface ResponseAddress {
-  pubkey: Buffer
-  address: string
+  pubkey: Buffer;
+  address: string;
 }
 
 export interface ResponseSign {
-  signature: Buffer
+  signature: Buffer;
 }

@@ -1,3 +1,3 @@
-import { runLedgerTests } from '../shared/ledger.shared.test';
+import { runLedgerTests } from "../shared/ledger.shared.test";
 
-runLedgerTests('Extension'); 
+runLedgerTests("Extension");
