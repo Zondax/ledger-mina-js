@@ -63,6 +63,7 @@ interface SignMessageResponse extends BaseLedgerResponse {
   field: string | null;
   scalar: string | null;
   raw_signature?: string | null;
+  signed_message?: string | null;
 }
 
 export class MinaApp extends BaseApp {
@@ -304,6 +305,7 @@ export class MinaApp extends BaseApp {
         field: null,
         scalar: null,
         raw_signature: null,
+        signed_message: null,
         returnCode: "-6",
         message: "Message is empty",
       };
@@ -313,6 +315,7 @@ export class MinaApp extends BaseApp {
         field: null,
         scalar: null,
         raw_signature: null,
+        signed_message: null,
         returnCode: "-7",
         message: "Message too long",
       };
@@ -345,15 +348,34 @@ export class MinaApp extends BaseApp {
       );
 
       const response = processResponse(responseBuffer);
-      const signature = response.readBytes(response.length()).toString("hex");
+      
+      // Validate minimum buffer length (64 bytes for signature + 1 byte for message length)
+      if (response.length() < 65) {
+        throw new Error("Response buffer too short");
+      }
+
+      // First read the signature (64 bytes)
+      const signature = response.readBytes(64).toString("hex");
       const sigLength = signature.length;
       const field_extracted = signature.substring(0, sigLength / 2);
       const scalar_extracted = signature.substring(sigLength / 2, sigLength);
+      
+      // Then read the message length (1 byte)
+      const messageLength = response.readBytes(1).readUInt8();
+      
+      // Validate remaining buffer length against message length
+      if (response.length() < messageLength) {
+        throw new Error("Response buffer too short for message");
+      }
+      
+      // Finally read the message
+      const returnedMessage = response.readBytes(messageLength).toString('utf8');
 
       return {
         field: BigInt("0x" + field_extracted).toString(),
         scalar: BigInt("0x" + scalar_extracted).toString(),
         raw_signature: signature,
+        signed_message: returnedMessage,
         returnCode: "9000",
       };
     } catch (e) {
@@ -362,6 +384,7 @@ export class MinaApp extends BaseApp {
         field: null,
         scalar: null,
         raw_signature: null,
+        signed_message: null,
         returnCode: respError.returnCode.toString(),
         message: respError.errorMessage,
       };
