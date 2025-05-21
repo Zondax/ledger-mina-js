@@ -26,7 +26,8 @@
   "types": "./dist/index.d.ts",
   "typings": "./dist/index.d.ts",
   "files": [
-    "dist/**"
+    "dist/**",
+    "README.md"
   ],
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs && tsc --emitDeclarationOnly",
