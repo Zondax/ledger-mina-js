@@ -80,6 +80,7 @@ export const runLedgerTests = (environment: string) => {
       expect(resp.scalar).toEqual(
         EXPECTED_SIGN_MESSAGE_RESPONSE.signature.scalar,
       );
+      expect(resp.signed_message).toEqual(EXPECTED_SIGN_MESSAGE_RESPONSE.data);
     });
   });
 };
