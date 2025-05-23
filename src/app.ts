@@ -241,7 +241,6 @@ export class MinaApp extends BaseApp {
         signature: null,
         returnCode: "-4",
         message: "Fee too small",
-
       };
     }
 
@@ -350,7 +349,7 @@ export class MinaApp extends BaseApp {
       );
 
       const response = processResponse(responseBuffer);
-      
+
       // Validate minimum buffer length (64 bytes for signature + 1 byte for message length)
       if (response.length() < 65) {
         throw new Error("Response buffer too short");
@@ -361,17 +360,21 @@ export class MinaApp extends BaseApp {
       const sigLength = signature.length;
       const field_extracted = signature.substring(0, sigLength / 2);
       const scalar_extracted = signature.substring(sigLength / 2, sigLength);
-      
+
       // Then read the message length (1 byte)
       const messageLength = response.readBytes(1).readUInt8();
-      
+
       // Validate remaining buffer length against message length
       if (response.length() < messageLength) {
-        throw new Error(`Response buffer too short for message: expected ${messageLength} bytes but only ${response.length()} remaining`);
+        throw new Error(
+          `Response buffer too short for message: expected ${messageLength} bytes but only ${response.length()} remaining`,
+        );
       }
-      
+
       // Finally read the message
-      const returnedMessage = response.readBytes(messageLength).toString('utf8');
+      const returnedMessage = response
+        .readBytes(messageLength)
+        .toString("utf8");
 
       return {
         field: BigInt("0x" + field_extracted).toString(),
