@@ -228,6 +228,7 @@ export class MinaApp extends BaseApp {
         message: "Missing or wrong arguments",
       };
     }
+
     if (memo && memo.length > 32) {
       return {
         signature: null,
@@ -240,6 +241,7 @@ export class MinaApp extends BaseApp {
         signature: null,
         returnCode: "-4",
         message: "Fee too small",
+
       };
     }
 
@@ -365,7 +367,7 @@ export class MinaApp extends BaseApp {
       
       // Validate remaining buffer length against message length
       if (response.length() < messageLength) {
-        throw new Error("Response buffer too short for message");
+        throw new Error(`Response buffer too short for message: expected ${messageLength} bytes but only ${response.length()} remaining`);
       }
       
       // Finally read the message
