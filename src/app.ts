@@ -367,7 +367,7 @@ export class MinaApp extends BaseApp {
       
       // Validate remaining buffer length against message length
       if (response.length() < messageLength) {
-        throw new Error("Response buffer too short for message");
+        throw new Error(`Response buffer too short for message: expected ${messageLength} bytes but only ${response.length()} remaining`);
       }
       
       // Finally read the message
