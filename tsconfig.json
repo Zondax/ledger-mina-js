@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2020",
     "strict": true,
@@ -10,12 +10,7 @@
     "skipLibCheck": true,
     "outDir": "./dist",
     "sourceMap": true,
-    "inlineSources": true,
-    "lib": ["ES2020", "DOM"],
-    "types": ["node", "jest"],
-    "allowJs": true,
-    "resolveJsonModule": true
+    "inlineSources": true
   },
-  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["./dist/**"]
 }
