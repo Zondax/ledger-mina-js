@@ -25,7 +25,7 @@ We recommend using the npmjs package in order to receive updates/fixes.
 | Operation       | Response                                                                         | Command                                                                                                         | Notes                                       |
 | --------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | signTransaction | { signature: string }                                                            | txType + senderAccount + senderAddress + receiverAddress + amount + fee + nonce + validUntil + memo + networkId | Signs a Mina transaction                    |
-| signMessage     | { field: string, scalar: string, raw_signature: string, signed_message: string } | account + networkId + message                                                                                   | Signs a message using the specified account |
+| signMessage     | { field: string, scalar: string, raw_signature: string } | account + networkId + message                                                                                   | Signs a message using the specified account |
 
 ### Transaction Types
 
