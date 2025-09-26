@@ -215,7 +215,6 @@ export class MinaApp extends BaseApp {
       isNaN(senderAccount) ||
       !senderAddress ||
       !receiverAddress ||
-      (!amount && txType === 0) /* PAYMENT */ ||
       !fee ||
       !Number.isInteger(amount) ||
       !Number.isInteger(fee) ||
