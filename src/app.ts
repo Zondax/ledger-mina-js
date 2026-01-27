@@ -66,6 +66,12 @@ interface SignMessageResponse extends BaseLedgerResponse {
   signed_message?: string | null;
 }
 
+interface SignFieldElementResponse extends BaseLedgerResponse {
+  field: string | null;
+  scalar: string | null;
+  raw_signature?: string | null;
+}
+
 export class MinaApp extends BaseApp {
   static _INS = {
     GET_VERSION: 0x01 as number,
@@ -73,6 +79,7 @@ export class MinaApp extends BaseApp {
     SIGN_TX: 0x03 as number,
     TEST_CRYPTO: 0x04 as number,
     SIGN_MSG: 0x05 as number,
+    SIGN_FIELD_ELEMENT: 0x06 as number,
   };
 
   static _params = {
@@ -389,6 +396,72 @@ export class MinaApp extends BaseApp {
         scalar: null,
         raw_signature: null,
         signed_message: null,
+        returnCode: respError.returnCode.toString(),
+        message: respError.errorMessage,
+      };
+    }
+  }
+
+  async signFieldElement(
+    account: number,
+    networkId: number,
+    fieldElement: Buffer | Uint8Array,
+  ): Promise<SignFieldElementResponse> {
+    if (fieldElement.length !== 32) {
+      return {
+        field: null,
+        scalar: null,
+        raw_signature: null,
+        returnCode: "-8",
+        message: "Field element must be exactly 32 bytes",
+      };
+    }
+    try {
+      const accountHex = Buffer.from(
+        account.toString(16).padStart(8, "0"),
+        "hex",
+      );
+      const networkIdHex = Buffer.from(
+        networkId.toString(16).padStart(2, "0"),
+        "hex",
+      );
+      const fieldBytes = Buffer.from(fieldElement);
+
+      // Total: 4 (account) + 1 (network) + 32 (field element) = 37 bytes
+      const dataTx = Buffer.concat([accountHex, networkIdHex, fieldBytes]);
+
+      const responseBuffer = await this.transport.send(
+        this.CLA,
+        this.INS.SIGN_FIELD_ELEMENT,
+        0,
+        0,
+        dataTx,
+      );
+
+      const response = processResponse(responseBuffer);
+
+      // Response is just 64 bytes signature (no message echo)
+      if (response.length() < 64) {
+        throw new Error("Response buffer too short");
+      }
+
+      const signature = response.readBytes(64).toString("hex");
+      const sigLength = signature.length;
+      const field_extracted = signature.substring(0, sigLength / 2);
+      const scalar_extracted = signature.substring(sigLength / 2, sigLength);
+
+      return {
+        field: BigInt("0x" + field_extracted).toString(),
+        scalar: BigInt("0x" + scalar_extracted).toString(),
+        raw_signature: signature,
+        returnCode: "9000",
+      };
+    } catch (e) {
+      const respError = processErrorResponse(e);
+      return {
+        field: null,
+        scalar: null,
+        raw_signature: null,
         returnCode: respError.returnCode.toString(),
         message: respError.errorMessage,
       };
