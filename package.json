@@ -9,13 +9,13 @@
     "Javascript",
     "Mina"
   ],
-  "homepage": "https://github.com/zondax/ledger-mina-js",
+  "homepage": "https://github.com/Zondax/ledger-mina-js",
   "bugs": {
-    "url": "https://github.com/zondax/ledger-mina-js/issues"
+    "url": "https://github.com/Zondax/ledger-mina-js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zondax/ledger-mina-js.git"
+    "url": "git+https://github.com/Zondax/ledger-mina-js.git"
   },
   "license": "Apache-2.0",
   "author": "Zondax AG",
@@ -32,13 +32,14 @@
     "format:check": "FORCE_COLOR=1 prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "yarn build && jest",
-    "upgrade": "bunx npm-check-updates -i"
+    "test": "pnpm build && jest --passWithNoTests",
+    "upgrade": "pnpm dlx npm-check-updates -i"
   },
   "dependencies": {
     "@zondax/ledger-js": "^1.0.1"
   },
   "devDependencies": {
+    "@ledgerhq/hw-transport": "^6.31.0",
     "@ledgerhq/hw-transport-mocker": "^6.29.3",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/jest": "29.5.13",
