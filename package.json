@@ -36,25 +36,26 @@
     "upgrade": "pnpm dlx npm-check-updates -i"
   },
   "dependencies": {
-    "@zondax/ledger-js": "^1.0.1"
+    "@zondax/ledger-js": "^1.3.1"
   },
   "devDependencies": {
-    "@ledgerhq/hw-transport": "^6.31.0",
-    "@ledgerhq/hw-transport-mocker": "^6.29.3",
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/jest": "29.5.13",
-    "@types/node": "^22.6.1",
-    "@typescript-eslint/eslint-plugin": "^8.7.0",
-    "@typescript-eslint/parser": "^8.7.0",
-    "eslint": "^9.11.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.30.0",
-    "eslint-plugin-tsdoc": "^0.3.0",
-    "eslint-plugin-unused-imports": "^4.1.4",
-    "prettier": "^3.3.3",
-    "sort-package-json": "^2.10.1",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.6.2"
+    "@ledgerhq/hw-transport": "^6.32.0",
+    "@ledgerhq/hw-transport-mocker": "^6.31.0",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/jest": "30.0.0",
+    "@types/node": "^25.0.10",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-tsdoc": "^0.5.0",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.8.1",
+    "sort-package-json": "^3.6.1",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
   },
   "publishConfig": {
     "access": "public"
