@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@zondax/ledger-js':
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: github:Zondax/ledger-js#feat/dmk-transport
+        version: https://codeload.github.com/Zondax/ledger-js/tar.gz/16b8a35f16ed67f4ec6577fef429ea98c972b2e3
     devDependencies:
       '@ledgerhq/hw-transport':
         specifier: ^6.32.0
@@ -464,17 +464,11 @@ packages:
   '@ledgerhq/devices@8.10.0':
     resolution: {integrity: sha512-ytT66KI8MizFX6dGJKthOzPDw5uNRmmg+RaMta62jbFePKYqfXtYTp6Wc0ErTXaL8nFS3IujHENwKthPmsj6jw==}
 
-  '@ledgerhq/devices@8.5.0':
-    resolution: {integrity: sha512-zDB6Pdk6NYYbYis8cWoLLkL9k/IvjhC3hkuuz2lhpJ2AxIs3/PDMUKoyK4DpjPtRyKk1W1lwsnpc6J1i87r4/Q==}
-
   '@ledgerhq/errors@6.29.0':
     resolution: {integrity: sha512-mmDsGN662zd0XGKyjzSKkg+5o1/l9pvV1HkVHtbzaydvHAtRypghmVoWMY9XAQDLXiUBXGIsLal84NgmGeuKWA==}
 
   '@ledgerhq/hw-transport-mocker@6.31.0':
     resolution: {integrity: sha512-mgLH9I3V8BQHkxw+I0shin7C175NPkR3fF8bZyfxQKznfx4aju6hGKgsUnLYA975eW81DhoyPepwJLAMvNsSnw==}
-
-  '@ledgerhq/hw-transport@6.31.9':
-    resolution: {integrity: sha512-HqB2Whl2qbrzyvs9gC/GmLhIy8RO4CWzjqHS4k0bPWDZRqKa8m6H32vjrbXGO//pUL1Mlu87UwvxvLyuICdjwg==}
 
   '@ledgerhq/hw-transport@6.32.0':
     resolution: {integrity: sha512-bf2nxzDQ21DV/bsmExfWI0tatoVeoqhu/ePWalD/nPgPnTn/ZIDq7VBU+TY5p0JZaE87NQwmRUAjm6C1Exe61A==}
@@ -803,8 +797,10 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@zondax/ledger-js@1.3.1':
-    resolution: {integrity: sha512-sDBwsunK2nSzkqJ5xi6QTiVVpAxSy+X1BVcMfKioBsInjktki2SezT7K8Hw6kSlYd3yfOJlw8cs+hqVtxpAGtg==}
+  '@zondax/ledger-js@https://codeload.github.com/Zondax/ledger-js/tar.gz/16b8a35f16ed67f4ec6577fef429ea98c972b2e3':
+    resolution: {gitHosted: true, integrity: sha512-99REi4geTxf6K5dpcFwBzA1batWtVoczM4Otm7H7zZmH6mSEloDHyKQA3Ua01Cp7hiDXoI7PVk5oPa5NLROu/w==, tarball: https://codeload.github.com/Zondax/ledger-js/tar.gz/16b8a35f16ed67f4ec6577fef429ea98c972b2e3}
+    version: 0.0.0
+    engines: {node: '>=20'}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -3051,13 +3047,6 @@ snapshots:
       rxjs: 7.8.2
       semver: 7.7.3
 
-  '@ledgerhq/devices@8.5.0':
-    dependencies:
-      '@ledgerhq/errors': 6.29.0
-      '@ledgerhq/logs': 6.14.0
-      rxjs: 7.8.2
-      semver: 7.7.3
-
   '@ledgerhq/errors@6.29.0': {}
 
   '@ledgerhq/hw-transport-mocker@6.31.0':
@@ -3065,13 +3054,6 @@ snapshots:
       '@ledgerhq/hw-transport': 6.32.0
       '@ledgerhq/logs': 6.14.0
       rxjs: 7.8.2
-
-  '@ledgerhq/hw-transport@6.31.9':
-    dependencies:
-      '@ledgerhq/devices': 8.5.0
-      '@ledgerhq/errors': 6.29.0
-      '@ledgerhq/logs': 6.14.0
-      events: 3.3.0
 
   '@ledgerhq/hw-transport@6.32.0':
     dependencies:
@@ -3404,9 +3386,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
 
-  '@zondax/ledger-js@1.3.1':
-    dependencies:
-      '@ledgerhq/hw-transport': 6.31.9
+  '@zondax/ledger-js@https://codeload.github.com/Zondax/ledger-js/tar.gz/16b8a35f16ed67f4ec6577fef429ea98c972b2e3': {}
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
