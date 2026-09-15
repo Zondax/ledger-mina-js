@@ -13,10 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import type Transport from "@ledgerhq/hw-transport";
 import BaseApp, {
   BIP32Path,
   INSGeneric,
+  type LedgerTransport,
   processErrorResponse,
   processResponse,
 } from "@zondax/ledger-js";
@@ -72,7 +72,19 @@ interface SignFieldElementResponse extends BaseLedgerResponse {
   raw_signature?: string | null;
 }
 
-export class MinaApp extends BaseApp {
+/**
+ * Generic in the transport so `app.transport` keeps the caller's own type.
+ *
+ * `BaseApp` declares `readonly transport: LedgerTransport`, so without this the widened
+ * constructor would narrow the inherited field as a side effect and `app.transport.close()`
+ * -- fine today -- would stop compiling. Re-declaring it as `T`, inferred from the argument,
+ * keeps every member of whatever was passed in: hw-transport's and a DMK transport's alike.
+ */
+export class MinaApp<
+  T extends LedgerTransport = LedgerTransport,
+> extends BaseApp {
+  declare readonly transport: T;
+
   static _INS = {
     GET_VERSION: 0x01 as number,
     GET_ADDR: 0x02 as number,
@@ -90,7 +102,7 @@ export class MinaApp extends BaseApp {
     requiredPathLengths: [5],
   };
 
-  constructor(transport: Transport) {
+  constructor(transport: T) {
     super(transport, MinaApp._params);
     if (!this.transport) {
       throw new Error("Transport has not been defined");

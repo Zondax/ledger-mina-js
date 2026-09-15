@@ -36,10 +36,9 @@
     "upgrade": "pnpm dlx npm-check-updates -i"
   },
   "dependencies": {
-    "@zondax/ledger-js": "^1.3.1"
+    "@zondax/ledger-js": "^2.1.0"
   },
   "devDependencies": {
-    "@ledgerhq/hw-transport": "^6.32.0",
     "@ledgerhq/hw-transport-mocker": "^6.31.0",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/jest": "30.0.0",
