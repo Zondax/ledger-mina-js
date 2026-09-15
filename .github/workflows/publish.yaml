@@ -1,6 +1,10 @@
 name: Publish NPM Package
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   release:
     types: [created]
 
@@ -14,11 +18,13 @@ permissions:
 
 jobs:
   publish-npm:
-    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v9
+    # @v12 >= v12.3.0 (Zondax/_workflows#136): pinned npm 11 for OIDC trusted publishing.
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v12
     permissions:
       contents: read
       id-token: write
     with:
       timeout_minutes: 15
-      dry_run: false
+      # Dry-run on pushes and PRs so a publish-breaking change fails before a release.
+      dry_run: ${{ github.event_name != 'release' }}
       github_app_auth: false
