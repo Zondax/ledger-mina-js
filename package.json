@@ -36,7 +36,7 @@
     "upgrade": "pnpm dlx npm-check-updates -i"
   },
   "dependencies": {
-    "@zondax/ledger-js": "^2.0.0"
+    "@zondax/ledger-js": "^2.1.0"
   },
   "devDependencies": {
     "@ledgerhq/hw-transport-mocker": "^6.31.0",
