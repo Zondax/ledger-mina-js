@@ -18,9 +18,8 @@ permissions:
 
 jobs:
   publish-npm:
-    # Zondax/_workflows#136 (fix/publish-npm-pinned-npm), pinned by SHA while it is
-    # validated here. Move to @v12 once it is released as v12.3.0.
-    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@4908a79608f01d483bb40de496b026608b1ee7a8
+    # @v12 >= v12.3.0 (Zondax/_workflows#136): pinned npm 11 for OIDC trusted publishing.
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v12
     permissions:
       contents: read
       id-token: write
